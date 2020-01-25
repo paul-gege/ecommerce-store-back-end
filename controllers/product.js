@@ -118,14 +118,13 @@ exports.update = (req,res) => {
 
 		product.save((err,result) => {
 			if(err){
-				Image.deleteMany({productId: product._id.toString()}, (err) => {
-					return res.status(400).json({
-						error: errorHandler(err)
-					})
+				Image.deleteMany({productId: product._id.toString()}, (error, result) => {
+					if(error) {
+						return console.log(errorHandler(error));	
+					}
 				});
-
 				return res.status(400).json({
-					error: errorHandler(err)
+					error: err.message
 				})
 			}
 			res.json(result);
@@ -217,14 +216,13 @@ exports.create = (req,res) => {
 
 		product.save((err,result) => {
 			if(err){
-				Image.deleteMany({productId: product._id.toString()}, (err) => {
-					return res.status(400).json({
-						error: errorHandler(err)
-					})
+				Image.deleteMany({productId: product._id.toString()}, (error, result) => {
+					if(error) {
+						return console.log(errorHandler(error));	
+					}
 				});
-
 				return res.status(400).json({
-					error: errorHandler(err)
+					error: err.message
 				})
 			}
 			res.json(result);

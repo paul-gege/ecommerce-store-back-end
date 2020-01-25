@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
 			type: String,
 			trim: true,
 			required: true,
-			maxlength: 32
+			maxlength: 256
 		},
 		description:{
 			type: String,
@@ -51,8 +51,12 @@ const productSchema = new mongoose.Schema(
 
 productSchema.methods = {
 	resetPhotos: function() {
-		this.model('Image').deleteMany({productId: this._id.toString()}, (err) => {
-			console.log("Deleted all images for product " + this._id.toString());
+		this.model('Image').deleteMany({productId: this._id.toString()}, (err, result) => {
+			if(err){
+				console.log(err);
+			} else {
+				console.log("Deleted all images for product " + this._id.toString());
+			}
 		});
 	}
 };
