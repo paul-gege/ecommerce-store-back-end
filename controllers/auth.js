@@ -3,12 +3,21 @@ const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const {errorHandler} = require("../helpers/dbErrorHandler.js");
 
-exports.signup = (req,res) => {
+exports.signup = async (req,res) => {
+	const userExists = await User.findOne({email: req.body.email});
+	
+	if(userExists){
+		return res.status(403).json({
+			error: 'Email is taken!'
+		});
+	}
+
 	const user = new User(req.body);
+
 	user.save((err,user) => {
 		if(err){
 			return res.status(400).json({
-				err: errorHandler(err)
+				error: errorHandler(err)
 			});
 		}
 		user.salt = undefined;
@@ -25,7 +34,7 @@ exports.signin = (req, res) => {
 	User.findOne({email}, (err, user) => {
 		if(err || !user){
 			return res.status(400).json({
-				error: "User with that email address does not exist. Pleas signup"
+				error: "User with that email address does not exist. Please sign up"
 			});
 		}
 
@@ -36,8 +45,9 @@ exports.signin = (req, res) => {
 		}
 	
 		const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET)
+
 		//persist our token for 9999s
-		res.cookie("t", token, {expire: new Date() + 9999});
+		res.cookie("token", token, {expire: new Date() + 9999});
 
 		const {_id, name, email, role} = user;
 		return res.json({token, user: {_id, email, name, role}});
@@ -45,14 +55,17 @@ exports.signin = (req, res) => {
 };
 
 exports.signout = (req,res) => {
-	res.clearCookie("t");
+	res.clearCookie("token");
 	res.json({message: "Signout success"});
 }
 
-//Authentication
+/*******************************************************************************************************************
+// Make the algorithm better https://stackoverflow.com/questions/39874731/unauthorizederror-invalid-algorithm-express-jwt
+********************************************************************************************************************/
 exports.requireSignin = expressJwt({
 	secret: process.env.JWT_SECRET,
-	userProperty: "auth"
+	userProperty: "auth",
+	algorithms: ['HS256']
 })
 
 exports.isAuth = (req, res, next) => {

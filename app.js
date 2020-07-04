@@ -45,6 +45,12 @@ app.use("/api", productRoutes);
 app.use("/api", braintreeRoutes);
 app.use("/api", orderRoutes);
 
+app.use((err, req, res, next) => {
+	if(err.name === 'UnauthorizedError'){
+		res.status(401).json({error: 'Unauthorized'})
+	}
+});
+
 
 const port = process.env.PORT || 8000;
 
